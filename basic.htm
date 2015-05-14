@@ -1,0 +1,177 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, 
+    user-scalable=no, initial-scale=1, maximum-scale=1, user-scalable=0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<style type="text/css">
+body { margin: 0; padding: 0; background: #000;}
+canvas { display: block; margin: 0 auto; background: #fff; }
+</style>
+
+</head>
+
+<body>
+<canvas> </canvas>
+<script>
+window.requestAnimFrame = (function(){
+  return  window.requestAnimationFrame       || 
+          window.webkitRequestAnimationFrame || 
+          window.mozRequestAnimationFrame    || 
+          window.oRequestAnimationFrame      || 
+          window.msRequestAnimationFrame     || 
+          function( callback ){
+            window.setTimeout(callback, 1000 / 60);
+          };
+})();
+
+// namespace our game
+var GAME = {
+    // set initial values
+    HEIGHT:  480, 
+    WIDTH: 320,                     // set up some initial values
+    scale: 1,
+    offset: {top: 0, left: 0},
+    entities: [],                   // everything to render and draw
+    score: {taps: 0},
+    RATIO:  null,                   // we'll set the rest of these in inti function
+    currentWidth:  null,
+    currentHeight:  null,
+    canvas: null,
+    ctx:  null,
+    ua: null,
+    android: null,
+    ios: null,
+    
+    init: function() {
+        GAME.RATIO = GAME.WIDTH / GAME.HEIGHT;
+        GAME.currentWidth = GAME.WIDTH;
+        GAME.currentHeight = GAME.HEIGHT;
+        // this is our canvas element
+        GAME.canvas = document.getElementsByTagName('canvas')[0];
+        // important, else the browser will default to 320x200
+        GAME.canvas.width = GAME.WIDTH;
+        GAME.canvas.height = GAME.HEIGHT;
+        // canvas context enables interaction with the canvas api
+        GAME.ctx = GAME.canvas.getContext('2d');
+        GAME.ua = navigator.userAgent.toLowerCase();
+        // sniff out user agent, adjust window size
+        GAME.android = GAME.ua.indexOf('android') > -1 ? true : false;
+        GAME.ios = ( GAME.ua.indexOf('iphone') > -1 || GAME.ua.indexOf('ipad') > -1  ) ? true : false;
+        // screen-writing functions
+        // GAME.Draw.clear();
+        
+        // listen for mouse
+        window.addEventListener("mousedown", function(e) {
+            e.preventDefault();
+        }, false);
+        window.addEventListener("mousemove", function(e) {
+            e.preventDefault();
+            GAME.MousePos.set(e);
+        }, false);
+        window.addEventListener("click", function(e) {
+            e.preventDefault();
+        }, false);
+        
+        // listen for touches
+        window.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+        }, false);
+        window.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, false);
+        window.addEventListener('touchend', function(e) {
+            e.preventDefault();
+        }, false);
+
+        GAME.resize();
+        GAME.loop();
+    },
+    
+    resize: function() {
+        // leave this function as is
+        GAME.currentHeight = window.innerHeight;
+        GAME.currentWidth = GAME.currentHeight * GAME.RATIO;
+        if (GAME.android || GAME.ios) {
+            document.body.style.height = (window.innerHeight + 50) + 'px';
+        }
+        GAME.canvas.style.width = GAME.currentWidth + 'px';
+        GAME.canvas.style.height = GAME.currentHeight + 'px';
+        GAME.scale = GAME.currentWidth / GAME.WIDTH;
+        GAME.offset.top = GAME.canvas.offsetTop;
+        GAME.offset.left = GAME.canvas.offsetLeft;
+        window.setTimeout(function() { window.scrollTo(0,1); }, 1);
+    },
+    
+    update: function() {
+        var i;
+        
+    },
+    
+    // this is where we draw all the entities
+    render: function() {
+        var i;
+        
+        // "clear"
+        GAME.Draw.rect(0, 0a, GAME.WIDTH, GAME.HEIGHT, '#036');
+        
+        // display info
+        GAME.Draw.text('Position : ( ' + Math.ceil(GAME.MousePos.x) + ' , ' + Math.ceil(GAME.MousePos.y) + ' )',
+        5, 15, 9, '#fff');
+    },
+    
+    // the actual loop that requests animation frame, then proceeds to update and render
+    loop: function() {
+        requestAnimFrame( GAME.loop );
+        GAME.update();
+        GAME.render();
+    }
+};
+
+GAME.Draw = {
+    // clear the canvas
+    clear: function() {
+        GAME.ctx.clearRect(0,0, GAME.WIDTH, GAME.HEIGHT);
+    },
+    // draw a rectangle
+    rect: function(x, y, w, h, col) {
+        GAME.ctx.fillStyle = col;
+        GAME.ctx.fillRect(x,y,w,h);
+    },
+    // draw a circle
+    circle: function(x, y, r, col) {
+        GAME.ctx.fillStyle = col;
+        GAME.ctx.beginPath();
+        GAME.ctx.arc(x + 5, y + 5, r, 0,  Math.PI * 2, true);
+        GAME.ctx.closePath();
+        GAME.ctx.fill();
+    },
+    // draw text
+    text: function(string, x, y, size, col) {
+        GAME.ctx.font = 'bold ' + size + 'px Helvetica';
+        GAME.ctx.fillStyle = col;
+        GAME.ctx.fillText(string, x, y);
+    }
+};
+
+GAME.MousePos = {
+    x: 0,
+    y: 0,
+    
+    set: function(event) {
+        this.x = (event.pageX - GAME.offset.left) / GAME.scale;
+        this.y = (event.pageY - GAME.offset.top) / GAME.scale;
+    }
+};
+
+window.addEventListener('load', GAME.init, false);
+window.addEventListener('resize', GAME.resize, false);
+
+</script>
+
+</body>
+</html>
